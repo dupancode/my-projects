@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pembaca File VCF</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+    <div id="app" class="max-w-lg w-full bg-white shadow-lg rounded-lg overflow-hidden">
+        <div class="bg-blue-600 p-5">
+            <h1 class="text-2xl font-bold text-white text-center">Pembaca File VCF</h1>
+            <p class="text-white text-center mt-1">by DUPANDES</p>
+        </div>
+
+        <div class="p-6">
+            <input type="file" @change="onFileChange" accept=".vcf" class="mb-4 w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-300">
+
+            <!-- Loading Spinner -->
+            <div v-if="loading" class="flex items-center justify-center">
+                <svg class="animate-spin h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                </svg>
+                <span class="ml-2">Loading...</span>
+            </div>
+
+            <div v-else>
+                <div v-if="contacts.length">
+                    <input type="text" v-model="search" placeholder="Cari berdasarkan nama atau telepon" class="mb-4 w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-300">
+                    <h2 class="text-xl font-semibold mb-2">Jumlah Kontak: {{ contactCount }}</h2>
+
+                    <div v-if="duplicate === true" class="mt-4 text-red-600">
+                        <p>Jumlah kontak dengan nomor yang sama tetapi nama berbeda: {{ duplicateCount }}</p>
+                    </div>
+
+                    <div class="mt-4 flex space-x-4">
+                        <button @click="removeDuplicates" class="w-full bg-red-500 text-white p-2 rounded-md hover:bg-red-600">Hapus Duplikat</button>
+                        <button @click="addToContacts" class="w-full bg-green-500 text-white p-2 rounded-md hover:bg-green-600">Masukkan ke Ponsel</button>
+                    </div>
+                    
+                    <table class="w-full mt-2 border border-gray-300 rounded-lg overflow-hidden">
+                        <thead class="bg-gray-200">
+                            <tr>
+                                <th class="border border-gray-300 p-2">Nama</th>
+                                <th class="border border-gray-300 p-2">Telepon</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="(contact, index) in filteredContacts" :key="index" class="hover:bg-gray-100">
+                                <td class="border border-gray-300 p-2 cursor-pointer" @click="openEditModal('name', index)">{{ contact.name }}</td>
+                                <td class="border border-gray-300 p-2 cursor-pointer" @click="openEditModal('phone', index)">{{ contact.phones.join(', ') }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div v-else>
+                    <p>Tidak ada kontak yang dimuat.</p>
+                </div>
+            </div>
+
+            <!-- Edit Modal -->
+            <transition name="fade">
+                <div v-if="showEditModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+                    <div class="bg-white p-6 rounded-lg shadow-lg">
+                        <h3 class="text-lg font-semibold mb-2">Edit Kontak</h3>
+                        <div v-if="editType === 'name'">
+                            <label class="block mb-1">Nama:</label>
+                            <input type="text" v-model="editedValue" class="w-full p-2 border border-gray-300 rounded-md" />
+                        </div>
+                        <div v-if="editType === 'phone'">
+                            <label class="block mb-1">Telepon:</label>
+                            <input type="text" v-model="editedValue" class="w-full p-2 border border-gray-300 rounded-md" />
+                        </div>
+                        <div class="mt-4">
+                            <button @click="saveEdit" class="bg-blue-500 text-white p-2 rounded-md">Simpan</button>
+                            <button @click="showEditModal = false" class="ml-2 bg-gray-300 text-black p-2 rounded-md">Batal</button>
+                        </div>
+                    </div>
+                </div>
+            </transition>
+        </div>
+    </div>
+
+    <script>
+        new Vue({
+            el: '#app',
+            data() {
+                return {
+                    contacts: [],
+                    loading: false,
+                    search: '',
+                    duplicateCount: 0,
+                    duplicate: false,
+                    showEditModal: false,
+                    editType: '',
+                    editedValue: '',
+                    editIndex: null,
+                };
+            },
+            computed: {
+                filteredContacts() {
+                    return this.contacts.filter(contact => {
+                        return contact.name.toLowerCase().includes(this.search.toLowerCase()) ||
+                               contact.phones.some(phone => phone.includes(this.search));
+                    }).sort((a, b) => a.name.localeCompare(b.name));
+                },
+                contactCount() {
+                    return this.filteredContacts.length;
+                }
+            },
+            methods: {
+                onFileChange(event) {
+                    const file = event.target.files[0];
+                    if (file) {
+                        this.loading = true;
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            this.parseVcf(e.target.result);
+                            this.loading = false;
+                        };
+                        reader.readAsText(file);
+                    }
+                },
+                parseVcf(contents) {
+                    const lines = contents.split('\n');
+                    const contacts = [];
+                    const phoneMap = new Map();
+                    let currentContact = {};
+                    let contactIndex = 0; // To track the index for 'anonim'
+
+                    lines.forEach(line => {
+                        if (line.startsWith('BEGIN:VCARD')) {
+                            currentContact = { phones: [] };
+                        } else if (line.startsWith('FN:')) {
+                            currentContact.name = line.substring(3).trim();
+                            // Ganti nama dengan 'anonim[index]' jika tidak mengandung huruf
+                            if (!/[a-zA-Z]/.test(currentContact.name)) {
+                                currentContact.name = `anonim${contactIndex++}`;
+                            }
+                        } else if (line.startsWith('TEL;')) {
+                            const phone = line.split(':')[1].trim();
+                            const normalizedPhone = this.normalizePhone(phone);
+                            if (normalizedPhone && !currentContact.phones.includes(normalizedPhone)) {
+                                currentContact.phones.push(normalizedPhone);
+                            }
+                        } else if (line.startsWith('END:VCARD')) {
+                            if (currentContact.name && currentContact.phones.length > 0) {
+                                currentContact.phones.forEach(phone => {
+                                    if (phoneMap.has(phone) && phoneMap.get(phone) !== currentContact.name) {
+                                        this.duplicateCount++;
+                                        this.duplicate = true; // Set duplicate to true
+                                    } else {
+                                        phoneMap.set(phone, currentContact.name);
+                                    }
+                                });
+                                contacts.push(currentContact);
+                            }
+                        }
+                    });
+
+                    this.contacts = contacts;
+                },
+                normalizePhone(phone) {
+                    const cleaned = phone.replace(/[^0-9+]/g, '');
+                    if (cleaned.startsWith('0')) {
+                        return cleaned.replace(/^0/, '+62');
+                    } else if (cleaned.startsWith('62')) {
+                        return '+' + cleaned;
+                    }
+                    return cleaned;
+                },
+                removeDuplicates() {
+                    const uniqueContacts = [];
+                    const seenPhones = new Set();
+
+                    this.contacts.forEach(contact => {
+                        const uniquePhones = contact.phones.filter(phone => {
+                            if (!seenPhones.has(phone)) {
+                                seenPhones.add(phone);
+                                return true;
+                            }
+                            return false;
+                        });
+                        if (uniquePhones.length > 0) {
+                            uniqueContacts.push({ name: contact.name, phones: uniquePhones });
+                        }
+                    });
+
+                    const initialCount = this.contacts.length;
+                    this.contacts = uniqueContacts;
+                    this.duplicateCount = initialCount - uniqueContacts.length;
+                    this.duplicate = false; // Set duplicate to false after removing duplicates
+                },
+                addToContacts() {
+                    const vcfData = this.contacts.map(contact => {
+                        const phones = contact.phones.map(phone => `TEL:${phone}`).join('\n');
+                        return `BEGIN:VCARD\nFN:${contact.name}\n${phones}\nEND:VCARD`;
+                    }).join('\n');
+
+                    const blob = new Blob([vcfData], { type: 'text/vcard' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'contacts.vcf';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                    alert("Kontak berhasil disiapkan untuk dimasukkan ke ponsel. Silakan unduh file VCF.");
+                },
+                openEditModal(type, index) {
+                    this.editType = type;
+                    this.editIndex = index; // Menggunakan index dari filteredContacts
+                    this.editedValue = (type === 'name') ? this.filteredContacts[index].name : this.filteredContacts[index].phones.join(', ');
+                    this.showEditModal = true;
+                },
+                saveEdit() {
+                    if (this.editType === 'name') {
+                        const newName = this.editedValue.trim();
+                        this.filteredContacts[this.editIndex].name = newName; // Mengupdate filteredContacts
+                    } else if (this.editType === 'phone') {
+                        this.filteredContacts[this.editIndex].phones = this.editedValue.split(',').map(phone => phone.trim()).filter(phone => phone);
+                    }
+                    this.showEditModal = false;
+                }
+            }
+        });
+    </script>
+</body>
+      </html>
+  
