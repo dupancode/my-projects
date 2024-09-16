@@ -1,25 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pembaca File VCF</title>
+    <title>Pembaca & Edit File VCF</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
 </head>
+
 <body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
     <div id="app" class="max-w-lg w-full bg-white shadow-lg rounded-lg overflow-hidden">
         <div class="bg-blue-600 p-5">
-            <h1 class="text-2xl font-bold text-white text-center">Pembaca File VCF</h1>
+            <h1 class="text-2xl font-bold text-white text-center">Pembaca & Edit File VCF</h1>
             <p class="text-white text-center mt-1">by DUPANDES</p>
         </div>
 
         <div class="p-6">
-            <input type="file" @change="onFileChange" accept=".vcf" class="mb-4 w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-300">
+            <input type="file" @change="onFileChange" accept=".vcf"
+                class="mb-4 w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-300">
 
             <!-- Loading Spinner -->
             <div v-if="loading" class="flex items-center justify-center">
-                <svg class="animate-spin h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <svg class="animate-spin h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none"
+                    viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
                 </svg>
@@ -28,7 +32,8 @@
 
             <div v-else>
                 <div v-if="contacts.length">
-                    <input type="text" v-model="search" placeholder="Cari berdasarkan nama atau telepon" class="mb-4 w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-300">
+                    <input type="text" v-model="search" placeholder="Cari berdasarkan nama atau telepon"
+                        class="mb-4 w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-300">
                     <h2 class="text-xl font-semibold mb-2">Jumlah Kontak: {{ contactCount }}</h2>
 
                     <div v-if="duplicate === true" class="mt-4 text-red-600">
@@ -36,10 +41,13 @@
                     </div>
 
                     <div class="mt-4 flex space-x-4">
-                        <button @click="removeDuplicates" class="w-full bg-red-500 text-white p-2 rounded-md hover:bg-red-600">Hapus Duplikat</button>
-                        <button @click="addToContacts" class="w-full bg-green-500 text-white p-2 rounded-md hover:bg-green-600">Masukkan ke Ponsel</button>
+                        <button @click="removeDuplicates"
+                            class="w-full bg-red-500 text-white p-2 rounded-md hover:bg-red-600">Hapus Duplikat</button>
+                        <button @click="addToContacts"
+                            class="w-full bg-green-500 text-white p-2 rounded-md hover:bg-green-600">Masukkan ke
+                            Ponsel</button>
                     </div>
-                    
+
                     <table class="w-full mt-2 border border-gray-300 rounded-lg overflow-hidden">
                         <thead class="bg-gray-200">
                             <tr>
@@ -49,8 +57,10 @@
                         </thead>
                         <tbody>
                             <tr v-for="(contact, index) in filteredContacts" :key="index" class="hover:bg-gray-100">
-                                <td class="border border-gray-300 p-2 cursor-pointer" @click="openEditModal('name', index)">{{ contact.name }}</td>
-                                <td class="border border-gray-300 p-2 cursor-pointer" @click="openEditModal('phone', index)">{{ contact.phones.join(', ') }}</td>
+                                <td class="border border-gray-300 p-2 cursor-pointer"
+                                    @click="openEditModal('name', index)">{{ contact.name }}</td>
+                                <td class="border border-gray-300 p-2 cursor-pointer"
+                                    @click="openEditModal('phone', index)">{{ contact.phones.join(', ') }}</td>
                             </tr>
                         </tbody>
                     </table>
@@ -67,15 +77,18 @@
                         <h3 class="text-lg font-semibold mb-2">Edit Kontak</h3>
                         <div v-if="editType === 'name'">
                             <label class="block mb-1">Nama:</label>
-                            <input type="text" v-model="editedValue" class="w-full p-2 border border-gray-300 rounded-md" />
+                            <input type="text" v-model="editedValue"
+                                class="w-full p-2 border border-gray-300 rounded-md" />
                         </div>
                         <div v-if="editType === 'phone'">
                             <label class="block mb-1">Telepon:</label>
-                            <input type="text" v-model="editedValue" class="w-full p-2 border border-gray-300 rounded-md" />
+                            <input type="text" v-model="editedValue"
+                                class="w-full p-2 border border-gray-300 rounded-md" />
                         </div>
                         <div class="mt-4">
                             <button @click="saveEdit" class="bg-blue-500 text-white p-2 rounded-md">Simpan</button>
-                            <button @click="showEditModal = false" class="ml-2 bg-gray-300 text-black p-2 rounded-md">Batal</button>
+                            <button @click="showEditModal = false"
+                                class="ml-2 bg-gray-300 text-black p-2 rounded-md">Batal</button>
                         </div>
                     </div>
                 </div>
@@ -103,7 +116,7 @@
                 filteredContacts() {
                     return this.contacts.filter(contact => {
                         return contact.name.toLowerCase().includes(this.search.toLowerCase()) ||
-                               contact.phones.some(phone => phone.includes(this.search));
+                            contact.phones.some(phone => phone.includes(this.search));
                     }).sort((a, b) => a.name.localeCompare(b.name));
                 },
                 contactCount() {
@@ -229,5 +242,5 @@
         });
     </script>
 </body>
-      </html>
-  
+
+</html>
