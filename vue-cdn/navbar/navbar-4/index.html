@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Navbar Hamburger Menu</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+  <style>
+    .slide-in {
+      animation: slideIn 0.3s ease forwards;
+      transform: translateX(-100%);
+    }
+
+    .slide-out {
+      animation: slideOut 0.3s ease forwards;
+      transform: translateX(0);
+    }
+
+    @keyframes slideIn {
+      to {
+        transform: translateX(0);
+      }
+    }
+
+    @keyframes slideOut {
+      to {
+        transform: translateX(-100%);
+      }
+    }
+  </style>
+</head>
+
+<body class="bg-gray-100">
+
+  <div id="app" class="flex flex-col items-start">
+    <header class="flex justify-between items-center w-full">
+      <h1 class="text-2xl font-semibold">LOGO</h1>
+      <button @click="toggleMenu" class="p-4 focus:outline-none">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+        </svg>
+      </button>
+
+      <transition name="slide" @before-leave="beforeLeave" @leave="leave">
+        <nav v-if="isMenuOpen" class="absolute top-12 left-0 w-full bg-white shadow-lg slide-in">
+          <ul class="flex flex-col p-4 space-y-2">
+            <li> <a href="#" class="text-gray-800 hover:text-blue-500">Home</a></li>
+            <li> <a href="#" class="text-gray-800 hover:text-blue-500">About</a></li>
+            <li> <a href="#" class="text-gray-800 hover:text-blue-500">Services</a></li>
+            <li> <a href="#" class="text-gray-800 hover:text-blue-500">Contact</a></li>
+          </ul>
+        </nav>
+      </transition>
+    </header>
+  </div>
+
+  <script>
+    new Vue({
+      el: '#app',
+      data: {
+        isMenuOpen: false
+      },
+      methods: {
+        toggleMenu() {
+          this.isMenuOpen = !this.isMenuOpen;
+        },
+        beforeLeave(el) {
+          el.classList.add('slide-out');
+        },
+        leave(el, done) {
+          el.addEventListener('animationend', done);
+        }
+      }
+    });
+  </script>
+
+</body>
+
+</html>
