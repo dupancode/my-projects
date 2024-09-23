@@ -12,24 +12,37 @@ Salah satu masalah yang dihadapi adalah penggunaan CDN untuk mengonversi Markdow
 Bagian JavaScript dari aplikasi ini berfungsi untuk mengelola interaksi pengguna dan pengambilan data. Berikut adalah rincian fungsinya:
 
 1. **Vue Instance**:
+   
    - Menciptakan instance Vue yang menghubungkan data dan metode ke elemen HTML dengan ID `app`.
 
-2. **Data**:
+3. **Data**:
+
    - **`apiUrl`**: Menyimpan URL untuk mengambil data Markdown.
+
    - **`loading`**: Boolean untuk menunjukkan status loading saat data sedang diambil.
+
    - **`error`**: Menyimpan pesan kesalahan jika terjadi saat pengambilan data.
+
    - **`outputType`**: Menentukan format output yang diinginkan (teks atau HTML).
+
    - **`outputContent`**: Menyimpan konten hasil konversi dari data yang diambil.
 
-3. **Methods**:
+4. **Methods**:
+
    - **`fetchData()`**:
-     - Mengatur status loading dan memulai permintaan GET menggunakan Axios.
-     - Jika berhasil, data Markdown diubah menjadi HTML dengan memanggil `markdownToHtml()`.
-     - Jika terjadi kesalahan, pesan akan disimpan untuk ditampilkan kepada pengguna.
+   
+     1. Mengatur status loading dan memulai permintaan GET menggunakan Axios.
+
+     2. Jika berhasil, data Markdown diubah menjadi HTML dengan memanggil `markdownToHtml()`.
+
+     3. Jika terjadi kesalahan, pesan akan disimpan untuk ditampilkan kepada pengguna.
+
    - **`copyToClipboard()`**:
-     - Membuat elemen textarea sementara untuk menyalin hasil ke clipboard.
+   
      - Jika output adalah HTML, konten disalin langsung; jika teks, karakter HTML di-encode untuk menjaga format.
+
    - **`markdownToHtml(markdown, isText)`**:
+
      - Mengonversi teks Markdown menjadi HTML dengan menggunakan ekspresi reguler untuk mengganti sintaks Markdown dengan tag HTML yang sesuai.
 
 ### Kesimpulan
