@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contoh Vue dengan Axios dan Markdown</title>
+  <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+
+    .output {
+      border: 1px solid #ccc;
+      padding: 10px;
+      background-color: #f9f9f9;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="app" class="max-w-4xl mx-auto p-5 bg-white shadow-lg rounded-lg">
+    <h1 class="text-4xl font-bold mb-4 text-center text-gray-800">Data MD dari API</h1>
+    <input type="text" v-model="apiUrl" placeholder="Masukkan URL API"
+      class="border border-gray-300 p-2 w-full mb-4 rounded">
+
+    <select v-model="outputType" class="border border-gray-300 mt-4 p-2 w-full mb-4 rounded">
+      <option value="text">Teks</option>
+      <option value="html" selected>HTML</option>
+    </select>
+    <button @click="fetchData"
+      class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded transition duration-200">Ambil Data</button>
+    <button v-if="outputContent" @click="copyToClipboard"
+      class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded transition duration-200 mt-1">Salin ke
+      Clipboard</button>
+
+    <div v-if="loading" class="mt-4 text-center">Memuat...</div>
+    <div v-if="error" class="mt-4 text-red-500 text-center">{{ error }}</div>
+    <div class="output mt-4 p-4 border border-gray-300 bg-gray-100 rounded-lg text-gray-800" v-html="outputContent">
+    </div>
+  </div>
+
+  <script>
+    new Vue({
+      el: '#app',
+      data: {
+        apiUrl: '',
+        loading: false,
+        error: null,
+        outputType: 'html',
+        outputContent: ''
+      },
+      methods: {
+        fetchData() {
+          this.error = null;
+          this.loading = true;
+
+          axios.get(this.apiUrl)
+            .then(response => {
+              this.outputContent = this.outputType === 'html'
+                ? this.markdownToHtml(response.data, false)
+                : this.markdownToHtml(response.data, true);
+            })
+            .catch(err => {
+              this.error = 'Terjadi kesalahan: ' + err.message;
+            })
+            .finally(() => {
+              this.loading = false;
+            });
+        },
+        copyToClipboard() {
+          const tempTextArea = document.createElement('textarea');
+          tempTextArea.value = this.outputType === 'html'
+            ? this.outputContent
+            : this.outputContent.replace(/</g, '&lt;').replace(/>/g, '&gt;'); // Encode HTML tags
+          document.body.appendChild(tempTextArea);
+          tempTextArea.select();
+          document.execCommand('copy');
+          document.body.removeChild(tempTextArea);
+          alert('Teks berhasil disalin ke clipboard!');
+        },
+        markdownToHtml(markdown, isText) {
+          markdown = markdown.replace(/###### (.+)/g, isText ? '###### $1' : '<h6 class="text-base font-normal text-gray-300">$1</h6>');
+          markdown = markdown.replace(/##### (.+)/g, isText ? '##### $1' : '<h5 class="text-lg font-normal text-gray-400">$1</h5>');
+          markdown = markdown.replace(/#### (.+)/g, isText ? '#### $1' : '<h4 class="text-xl font-normal text-gray-500">$1</h4>');
+          markdown = markdown.replace(/### (.+)/g, isText ? '### $1' : '<h3 class="text-2xl font-medium text-gray-600">$1</h3>');
+          markdown = markdown.replace(/## (.+)/g, isText ? '## $1' : '<h2 class="text-3xl font-semibold text-gray-700">$1</h2>');
+          markdown = markdown.replace(/# (.+)/g, isText ? '# $1' : '<h1 class="text-4xl font-bold text-gray-800">$1</h1>');
+
+          markdown = markdown.replace(/\*\*(.+?)\*\*/g, isText ? '**$1**' : '<strong>$1</strong>');
+          markdown = markdown.replace(/\*(.+?)\*/g, isText ? '*$1*' : '<em>$1</em>');
+          markdown = markdown.replace(/!\[(.*?)\]\((.*?)\)/g, isText ? '![$1]($2)' : '<img src="$2" alt="$1">');
+
+          markdown = markdown.replace(/^\s*-\s+(.+)/gm, isText ? '- $1' : '<li>$1</li>');
+          markdown = markdown.replace(/<\/li>\s*<li>/g, '</li><li>');
+          markdown = markdown.replace(/<li>(.*?)<\/li>/g, '<ul class="list-disc pl-5"><li>$1</li></ul>');
+
+          markdown = markdown.replace(/---+/g, '<hr class="my-4">');
+          markdown = markdown.replace(/\n\n+/g, '</p><p>').replace(/\n/g, '<br>');
+          markdown = (isText ? markdown : '<p class="text-gray-800">' + markdown + '</p>');
+
+          return markdown;
+        }
+      }
+    });
+  </script>
+
+</body>
+
+</html>
