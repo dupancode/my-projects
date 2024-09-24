@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, content-scale=1.0">
+  <title>List Transitions</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+    .transition-height {
+      transition: height 0.5s ease, opacity 0.5s ease;
+      overflow: hidden;
+    }
+
+    .fade-enter-active,
+    .fade-leave-active {
+      transition: opacity 0.5s ease;
+    }
+
+    .fade-enter,
+    .fade-leave-to
+
+    /* .fade-leave-active in <2.1.8 */
+      {
+      opacity: 0;
+      height: 0;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="app">
+    <ul class="list-disc p-5">
+      <li class="mb-2" v-for="(item, index) in items" :key="index">
+        <span @click="selectItem(index)" class="text-blue-500 hover:underline cursor-pointer">{{ item.title }}</span>
+        <transition name="fade">
+          <div v-if="selectedItem === index" class="transition-height">
+            <p class="mt-2 text-gray-700">{{ item.text }}</p>
+          </div>
+        </transition>
+      </li>
+    </ul>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+  <script>
+    new Vue({
+      el: '#app',
+      data: {
+        items: [
+          { title: 'Item 1', text: 'This is the text for Item 1.' },
+          { title: 'Item 2', text: 'This is the text for Item 2.' },
+          { title: 'Item 3', text: 'This is the text for Item 3.' },
+          { title: 'Item 4', text: 'This is the text for Item 4.' },
+        ],
+        selectedItem: null,
+      },
+      methods: {
+        selectItem(index) {
+          this.selectedItem = this.selectedItem === index ? null : index;
+        },
+      },
+    });
+  </script>
+</body>
+
+</html>
