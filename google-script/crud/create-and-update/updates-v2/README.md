@@ -57,5 +57,3 @@ Fungsi ini efisien dan efektif karena:
 4. Menggunakan `Object.entries()` untuk iterasi yang lebih bersih dan efisien pada objek.
 
 Fungsi ini akan mencari baris berdasarkan `id` dan `symbol`. Jika ditemukan, akan memperbarui nilai-nilai yang ada. Jika tidak ditemukan, akan menambahkan baris baru dengan data tersebut.
-
-Apakah Anda ingin saya menjelaskan bagian tertentu dari kode ini lebih detail?
