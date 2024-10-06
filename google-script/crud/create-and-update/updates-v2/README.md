@@ -1,5 +1,7 @@
 Penjelasan kode:
 
+kode ini sama seperti sebelumnya namun, terdapat beberapa perubahan agar lebih efisien dan efektif.
+
 1. `let SHEET_NAME = "";` - Mendefinisikan variabel global untuk nama sheet yang akan digunakan.
 
 2. `function insertDataBot(dataUpdates)` - Mendefinisikan fungsi utama yang menerima parameter `dataUpdates` (objek yang berisi data yang akan dimasukkan/diperbarui).
@@ -45,7 +47,7 @@ console.log(result);
 Dalam contoh ini:
 
 1. Kita mengatur `SHEET_NAME` ke "Data Produk".
-2. Kita membuat objek `newData` yang berisi informasi produk.
+2. Kita membuat objek `newData` pastikan `key === header sheet` yang berisi informasi produk.
 3. Kita memanggil `insertDataBot(newData)` untuk memasukkan atau memperbarui data.
 4. Hasil operasi dicetak ke console.
 
