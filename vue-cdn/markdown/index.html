@@ -100,6 +100,9 @@
           markdown = markdown.replace(/^\s*-\s+(.+)/gm, isText ? '- $1' : '<li>$1</li>');
           markdown = markdown.replace(/<\/li>\s*<li>/g, '</li><li>');
           markdown = markdown.replace(/<li>(.*?)<\/li>/g, '<ul class="list-disc pl-5"><li>$1</li></ul>');
+          
+          markdown = markdown.replace(/```(.*?)\n([\s\S]*?)```/g, '<pre class="bg-gray-100 p-3 rounded"><code>$2</code></pre>');
+          markdown = markdown.replace(/`([^`]+)`/g, '<code class="bg-gray-200 p-1 rounded">$1</code>');
 
           markdown = markdown.replace(/---+/g, '<hr class="my-4">');
           markdown = markdown.replace(/\n\n+/g, '</p><p>').replace(/\n/g, '<br>');
