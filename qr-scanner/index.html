@@ -1,39 +1,106 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
+
 <head>
-    <title>Html-Qrcode Demo</title>
-<body>
-    <div id="qr-reader" style="width:500px"></div>
-    <div id="qr-reader-results"></div>
-</body>
-<script src="https://unpkg.com/html5-qrcode"></script>
-<script>
-    function docReady(fn) {
-        // see if DOM is already available
-        if (document.readyState === "complete"
-            || document.readyState === "interactive") {
-            // call on next available tick
-            setTimeout(fn, 1);
-        } else {
-            document.addEventListener("DOMContentLoaded", fn);
-        }
-    }
-
-    docReady(function () {
-        var resultContainer = document.getElementById('qr-reader-results');
-        var lastResult, countResults = 0;
-        function onScanSuccess(decodedText, decodedResult) {
-            if (decodedText !== lastResult) {
-                ++countResults;
-                lastResult = decodedText;
-                // Handle on success condition with the decoded message.
-                alert(`Scan result ${decodedText}`, decodedResult);
-            }
-        }
-
-        var html5QrcodeScanner = new Html5QrcodeScanner(
-            "qr-reader", { fps: 10, qrbox: 250 });
-        html5QrcodeScanner.render(onScanSuccess);
-    });
-</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QR Code Scanner</title>
+  <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jsqr"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
+
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+
+  <div id="app" class="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
+    <h1 class="text-2xl font-bold text-gray-800 mb-4">Scan QR Code</h1>
+
+    <!-- Video Element for Camera -->
+    <video ref="video" class="w-full rounded-lg" autoplay></video>
+    <button @click="startScanning" class="mt-4 bg-blue-500 text-white py-2 px-4 rounded">Start Scanning</button>
+
+    <!-- Output -->
+    <div v-if="qrCodeContent" class="mt-4">
+      <p class="text-lg font-bold text-gray-900 mt-2 break-words">{{ qrCodeContent }}</p>
+    </div>
+
+    <!-- Error Handling -->
+    <div v-if="errorMessage" class="mt-4 text-red-600">
+      {{ errorMessage }}
+    </div>
+  </div>
+
+  <script>
+    new Vue({
+      el: "#app",
+      data: () => ({
+        qrCodeContent: null,
+        errorMessage: null,
+        scanning: false,
+      }),
+      methods: {
+        async startScanning() {
+          try {
+            const stream = await navigator.mediaDevices.getUserMedia({
+              video: { facingMode: { exact: "environment" } },
+            });
+            this.$refs.video.srcObject = stream;
+            this.scanning = true;
+            this.scanQRCode();
+          } catch {
+            this.errorMessage = "Could not access camera. Please check permissions.";
+          }
+        },
+        scanQRCode() {
+          const canvas = Object.assign(document.createElement("canvas"), { width: 640, height: 480 });
+          const ctx = canvas.getContext("2d");
+          const scan = () => {
+            if (!this.scanning) return;
+
+            ctx.drawImage(this.$refs.video, 0, 0, canvas.width, canvas.height);
+            const result = jsQR(ctx.getImageData(0, 0, canvas.width, canvas.height).data, canvas.width, canvas.height);
+
+            if (result) {
+              this.scanning = false;
+              this.$refs.video.srcObject.getTracks().forEach(track => track.stop());
+
+              // Send the QR code data to the server using fetch
+              fetch("https://script.google.com/macros/s/AKfycbwS9AIg-9uxrMC_dpfNLLub1b9xLwu_MnaXXHwZLTJ21Y145oV3LMTBaZN0ayStHD1F/exec", {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ code: result.data }),
+              })
+                .then(response => response.json())
+                .then(data => {
+                  // Show success or failure message based on server response
+                  this.qrCodeContent = data.success == 1 ? result.data : "QR Code tidak terdaftar!";
+
+                  // Clear the message after 2 seconds
+                  setTimeout(() => {
+                    this.qrCodeContent = "";
+                  }, 2000);
+
+                  // Continue scanning for QR codes
+                  requestAnimationFrame(scan);
+                })
+                .catch(() => {
+                  // Handle errors
+                  alert("Error sending QR code to server.");
+                });
+            } else {
+              requestAnimationFrame(scan);
+            }
+          };
+          scan();
+        },
+      },
+    });
+  </script>
+
+
+</body>
+
 </html>
