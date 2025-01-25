@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Html-Qrcode Demo</title>
+  <style>
+    #qr-reader {
+      width: 400px;
+      height: 400px;
+      margin: auto;
+      margin-top: 369px;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="qr-reader"></div>
+  <div id="qr-reader-results"></div>
+  <div id="alert"
+    style="display:none; position:fixed; top:20px; right:20px; background-color:#4CAF50; color:white; padding:15px; border-radius:5px;">
+    QR Code Terdeteksi!
+  </div>
+</body>
+<script src="https://unpkg.com/html5-qrcode"></script>
+<script>
+  function docReady(fn) {
+    if (document.readyState === "complete" || document.readyState === "interactive") {
+      setTimeout(fn, 1);
+    } else {
+      document.addEventListener("DOMContentLoaded", fn);
+    }
+  }
+
+  docReady(function () {
+    var resultContainer = document.getElementById('qr-reader-results');
+    var alertDiv = document.getElementById('alert');
+    var lastResult, countResults = 0;
+
+    function showAlert() {
+      alertDiv.style.display = 'block';
+      setTimeout(function () {
+        alertDiv.style.display = 'none';
+      }, 2000); // Alert akan hilang setelah 2 detik
+    }
+
+    function onScanSuccess(decodedText, decodedResult) {
+      if (decodedText !== lastResult) {
+        ++countResults;
+        lastResult = decodedText;
+        showAlert(); // Menampilkan alert ketika QR terdeteksi
+        resultContainer.innerHTML = `
+                    <p>Hasil Scan: <strong>${decodedText}</strong></p>
+                    <p>Total Scan: ${countResults}</p>`
+          ;
+      }
+    }
+
+    var html5QrcodeScanner = new Html5QrcodeScanner(
+      "qr-reader",
+      {
+        fps: 10,
+        qrbox: { width: 250, height: 250 },
+        aspectRatio: 1.0
+      }
+    );
+    html5QrcodeScanner.render(onScanSuccess);
+  });
+</script>
+
+</html>
