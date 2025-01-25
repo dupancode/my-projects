@@ -64,15 +64,10 @@
               params: { id, qrCode },
             })
             .then((response) => {
-              if (response.data.success === 1) {
-                this.qrCodeContent = "Peserta hadir!";
-                this.resumeScanning(); // Lanjutkan scanning
-                alert(qrCode)
-              } else {
-                this.qrCodeContent = "Peserta tidak terdaftar!";
-               // setTimeout(() => (this.qrCodeContent = ""), 3000); // Hapus pesan setelah 3 detik
-                this.resumeScanning(); // Tetap lanjutkan scanning
-              }
+              const status = response.data.success;
+              this.qrCodeContent = status === 1 ? "Peserta hadir!" : "Peserta tidak terdaftar!";
+              setTimeout(() => (this.qrCodeContent = ""), 5000);
+              this.resumeScanning(); // Lanjutkan scanning
             })
             .catch((error) => {
               console.error("Error sending QR Code:", error);
