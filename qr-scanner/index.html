@@ -64,7 +64,7 @@
           })
             .then(response => {
               if (response.data.success === 1) {
-                requestAnimationFrame(scan);
+                startScanning();
                 this.qrCodeContent = "Peserta hadir!"
               } else {
                 this.qrCodeContent = 'Peserta tidak terdaftar!'
