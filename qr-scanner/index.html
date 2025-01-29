@@ -65,7 +65,7 @@
         },
         sendPost(qrCode) {
           const id = "111";
-          const url = "https://script.google.com/macros/s/AKfycbzS2xk_j39HmRd0C5XUhlyvH7nDlxC8sL5X4qyLpWxo8GUbsRYhayRqKASS5WRNquhJ/exec";
+          const url = "https://script.google.com/macros/s/AKfycbwRgdKoXtzfQltzI-_9Ya9tOplo-fFY7jVFMYimXL0dSs-2qjJIAYg9oGRD36Hqwr3_/exec";
 
           axios
             .get(url, { params: { id, qrCode } })
@@ -79,7 +79,6 @@
               }, 2000);
             })
             .catch((error) => {
-              console.error("Error sending QR Code:", error);
               this.errorMessage = "Failed to process QR Code.";
               //setTimeout(() => (this.errorMessage = ""), 3000);
               this.scanning = false;
