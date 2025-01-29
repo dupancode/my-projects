@@ -57,7 +57,7 @@
         sendPost(qrCode) {
           const id = "111";
           const url =
-            "https://script.google.com/macros/s/AKfycbyo34k8lpyf--Wf82eVUQJtx9kPvZTkZsg3mbGUsEh_cd9j4NUgiRXn3AGhKAj-cefC/exec";
+            "https://script.google.com/macros/s/AKfycbzS2xk_j39HmRd0C5XUhlyvH7nDlxC8sL5X4qyLpWxo8GUbsRYhayRqKASS5WRNquhJ/exec";
 
           axios
             .get(url, {
@@ -66,7 +66,7 @@
             .then((response) => {
               const status = response.data.success;
               this.qrCodeContent = status === 1 ? "Peserta hadir!" : "Peserta tidak terdaftar!";
-              setTimeout(() => (this.qrCodeContent = ""), 5000);
+              setTimeout(() => (this.qrCodeContent = ""), 1000);
               this.resumeScanning(); // Lanjutkan scanning
             })
             .catch((error) => {
