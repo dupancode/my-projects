@@ -22,7 +22,6 @@
 
     <!-- Output -->
     <div v-if="qrCodeContent" class="mt-4">
-      <p class="text-sm font-medium text-gray-600">Decoded QR Code Content:</p>
       <p class="text-lg font-bold text-gray-900 mt-2 break-words">{{ qrCodeContent }}</p>
     </div>
 
@@ -33,6 +32,7 @@
   </div>
 
   <script>
+    let sound = new Audio("https://raw.githubusercontent.com/Yousuke777/sound/main/kansei.mp3");
     new Vue({
       el: "#app",
       data() {
@@ -71,6 +71,7 @@
             .get(url, { params: { id, qrCode } })
             .then((response) => {
               const status = response.data.success;
+              sound.play();
               this.qrCodeContent = status === 1 ? "Peserta hadir!" : "Peserta tidak terdaftar!";
 
               setTimeout(() => {
@@ -80,7 +81,7 @@
             })
             .catch((error) => {
               this.errorMessage = "Failed to process QR Code.";
-              //setTimeout(() => (this.errorMessage = ""), 3000);
+              setTimeout(() => (this.errorMessage = ""), 3000);
               this.scanning = false;
             });
         },
