@@ -1,4 +1,4 @@
-Tujuan utama dari aplikasi ini adalah untuk mengambil data dalam format `.md` (Markdown) dari sebuah link dan mengonversinya menjadi HTML atau teks yang dapat dibaca. Aplikasi ini dirancang untuk menampilkan konten Markdown dengan cara menggunakan tag `html`.
+Aplikasi ini digunakan untuk mengambil data dalam format `.md` (Markdown) dari sebuah link dan mengonversinya menjadi HTML atau teks yang dapat dibaca. Aplikasi ini dirancang untuk menampilkan konten Markdown dengan cara menggunakan tag `html`.
 
 ### Fungsi Aplikasi
 - Memasukkan URL untuk mengambil data Markdown.
