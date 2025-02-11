@@ -31,28 +31,27 @@ Skrip ini menyediakan fungsionalitas untuk berinteraksi dengan platform trading 
 2. Membuat Order
    - **Action:** `order`
    - **Parameter Wajib:** `type, pair, amount, price, market`
-   - **Contoh Penggunaan:**
-   1.  Market Order:  `indodax('order', 'buy', 'btc_idr', 100000, '', true); `
-   2.  Limit Order:  `indodax('order', 'sell', 'eth_idr', 0.01, 7500000, false);`
+   -  Market Order:  `indodax('order', 'buy', 'btc_idr', 100000, '', true); `
+   -  Limit Order:  `indodax('order', 'sell', 'eth_idr', 0.01, 7500000, false);`
 ---
 3. Membatalkan Order
    - **Action:** `cancel` **Parameter Wajib:** `type` (ID order): `indodax('cancel', '80872690');`
 ---
 4. Mendapatkan Riwayat Order:
    - **Action:** `orderHistory` **Parameter Wajib:** `type` (pasangan trading).
-   - **Contoh Penggunaan:** `indodax('orderHistory', 'btc_idr');`
+   - `indodax('orderHistory', 'btc_idr');`
 ---
 5. Mendapatkan Riwayat Trading:
    - **Action:** `tradeHistory`- **Parameter Wajib:** `type` (pasangan trading), `pair` (ID order opsional).
-   - **Contoh Penggunaan:** `indodax('tradeHistory', 'btc_idr', '123456');`
+   - `indodax('tradeHistory', 'btc_idr', '123456');`
 ---
 6. Mendapatkan Order Aktif:
    - **Action:** `openOrders`- **Parameter Wajib:** `type` (pasangan trading)
-   - - **Contoh Penggunaan:** `indodax('openOrders', 'btc_idr');`
+   - - `indodax('openOrders', 'btc_idr');`
 ---
 7. Mendapatkan Detail Order Tertentu:
    - **Action:** `getOrder`- **Parameter Wajib:** `type` (pasangan trading), `pair` (ID order)
-   -  **Contoh Penggunaan:** `indodax('getOrder', 'btc_idr', '123456');console.log(detailOrder);`
+   -  `indodax('getOrder', 'btc_idr', '123456');console.log(detailOrder);`
 ---
 ## Fungsi Pembantu
 1. `request()`Menangani permintaan API dan memproses respons.
