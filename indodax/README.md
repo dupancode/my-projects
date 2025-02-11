@@ -2,57 +2,57 @@
 
 Skrip ini menyediakan fungsionalitas untuk berinteraksi dengan platform trading Indodax menggunakan API-nya. Berikut penjelasan detail tentang fungsi `indodax` dan contoh penggunaannya untuk berbagai tindakan.
 
-```indodax(action, type, pair, amount, price, market) { ... }```
+`indodax(action, type, pair, amount, price, market) { ... }`
 
 1. Menentukan operasi yang akan dilakukan:
-   ```(`getBalance`, `order`, `cancel`)```
+   `('getBalance', 'order', 'cancel')`
 
 3. Type menentukan jenis order atau aset:
-   ```(`buy`, `sell`)```
+   `('buy', 'sell')`
 
-3. Pair pasangan trading ```(`btc_idr`, `eth_idr`)```
+3. Pair pasangan trading `('btc_idr', 'eth_idr')`
    
 5. Aamount Jumlah untuk order (opsional untuk beberapa tindakan, type `Number`):
    
-    ```100000```
+    `100000`
 7. Price untuk order (hanya digunakan untuk limit order):
    `market` (Boolean): Menunjukkan apakah order adalah market order (true) atau limit order (false).
 
 8. Perbarui variabel berikut dengan kredensial API Anda:
-   ```apiKey = "KUNCI_API_ANDA"; const secretKey = "KUNCI_RAHASIA_ANDA";```
+   `apiKey = 'KUNCI_API_ANDA'; const secretKey = 'KUNCI_RAHASIA_ANDA';`
 ---
 ## Tindakan dan Contoh
 
 1. Mendapatkan Saldo:
    
-   - **Action:** `getBalance`: ```indodax('getBalance')```
-   - **Respons:** Array objek berisi saldo tidak nol: ```[  { symbol: 'btc', amount: 0.01 },  { symbol: 'eth', amount: 0.5 }]```
+   - **Action:**: `indodax('getBalance')`
+   - **Respons:** Array objek berisi saldo tidak nol: `[  { symbol: 'btc', amount: 0.01 },  { symbol: 'eth', amount: 0.5 }]`
 ---
 2. Membuat Order
    - **Action:** `order`
-   - **Parameter Wajib:** `type`, `pair`, `amount`, `price`, `market`
+   - **Parameter Wajib:** `type, pair, `amount, price, market`
    - **Contoh Penggunaan:**
-   1.  Market Order:  ```indodax('order', 'buy', 'btc_idr', 100000, '', true); ```
-   2.  Limit Order:  ```indodax('order', 'sell', 'eth_idr', 0.01, 7500000, false);```
+   1.  Market Order:  `indodax('order', 'buy', 'btc_idr', 100000, '', true); `
+   2.  Limit Order:  `indodax('order', 'sell', 'eth_idr', 0.01, 7500000, false);`
 ---
 3. Membatalkan Order
-   - **Action:** `cancel` **Parameter Wajib:** `type` (ID order): ``` indodax('cancel', '80872690');```
+   - **Action:** `cancel` **Parameter Wajib:** `type` (ID order): `indodax('cancel', '80872690');`
 ---
 4. Mendapatkan Riwayat Order:
    - **Action:** `orderHistory` **Parameter Wajib:** `type` (pasangan trading).
-   - **Contoh Penggunaan:** ```indodax('orderHistory', 'btc_idr');```
+   - **Contoh Penggunaan:** `indodax('orderHistory', 'btc_idr');`
 ---
 5. Mendapatkan Riwayat Trading:
    - **Action:** `tradeHistory`- **Parameter Wajib:** `type` (pasangan trading), `pair` (ID order opsional).
-   - **Contoh Penggunaan:** ```indodax('tradeHistory', 'btc_idr', '123456');```
+   - **Contoh Penggunaan:** `indodax('tradeHistory', 'btc_idr', '123456');`
 ---
 6. Mendapatkan Order Aktif:
    - **Action:** `openOrders`- **Parameter Wajib:** `type` (pasangan trading)
-   - - **Contoh Penggunaan:** ```indodax('openOrders', 'btc_idr');```
+   - - **Contoh Penggunaan:** `indodax('openOrders', 'btc_idr');`
 ---
 7. Mendapatkan Detail Order Tertentu:
    - **Action:** `getOrder`- **Parameter Wajib:** `type` (pasangan trading), `pair` (ID order)
-   -  **Contoh Penggunaan:** ```indodax('getOrder', 'btc_idr', '123456');console.log(detailOrder);```
+   -  **Contoh Penggunaan:** `indodax('getOrder', 'btc_idr', '123456');console.log(detailOrder);`
 ---
 ## Fungsi Pembantu
 1. `request()`Menangani permintaan API dan memproses respons.
