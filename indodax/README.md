@@ -30,7 +30,7 @@ Skrip ini menyediakan fungsionalitas untuk berinteraksi dengan platform trading 
 ---
 2. Membuat Order
    - **Action:** `order`
-   - **Parameter Wajib:** `type, pair, `amount, price, market`
+   - **Parameter Wajib:** `type, pair, amount, price, market`
    - **Contoh Penggunaan:**
    1.  Market Order:  `indodax('order', 'buy', 'btc_idr', 100000, '', true); `
    2.  Limit Order:  `indodax('order', 'sell', 'eth_idr', 0.01, 7500000, false);`
