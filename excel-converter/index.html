@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excel Converter</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.3.4/vue.global.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <style>
+        .fade-enter-active,
+        .fade-leave-active {
+            transition: opacity 0.5s;
+        }
+
+        .fade-enter-from,
+        .fade-leave-to {
+            opacity: 0;
+        }
+
+        .slide-enter-active,
+        .slide-leave-active {
+            transition: transform 0.5s;
+        }
+
+        .slide-enter-from,
+        .slide-leave-to {
+            transform: translateY(-20px);
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100">
+    <div id="app" class="min-h-screen p-8">
+        <div class="max-w-6xl mx-auto">
+            <!-- Header -->
+            <div class="text-center mb-8 transform transition-all hover:scale-105">
+                <h1 class="text-4xl font-bold text-gray-800 mb-2">Excel Converter</h1>
+                <p class="text-gray-600">Convert your Excel files to JSON, HTML Table, PDF, or PNG</p>
+            </div>
+
+            <!-- File Input -->
+            <div class="bg-white rounded-lg shadow-lg p-6 mb-8 transform transition-all hover:shadow-xl">
+                <div class="flex items-center justify-center w-full">
+                    <label
+                        class="flex flex-col w-full h-32 border-4 border-dashed hover:bg-gray-100 hover:border-gray-300">
+                        <div class="flex flex-col items-center justify-center pt-7 cursor-pointer">
+                            <svg class="w-12 h-12 text-gray-400 group-hover:text-gray-600" fill="none"
+                                stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            <p class="pt-1 text-sm tracking-wider text-gray-400 group-hover:text-gray-600">
+                                Select Excel file
+                            </p>
+                        </div>
+                        <input type="file" class="opacity-0" @change="handleFile" accept=".xlsx,.xls" />
+                    </label>
+                </div>
+            </div>
+
+            <!-- Preview and Controls -->
+            <div v-if="tableData.length" class="bg-white rounded-lg shadow-lg p-6 mb-8">
+                <!-- Format Selection -->
+                <div class="flex justify-center mb-6 space-x-4">
+                    <button v-for="format in ['JSON', 'HTML', 'PDF', 'PNG']" :key="format"
+                        @click="selectedFormat = format" :class="[
+                            'px-4 py-2 rounded-lg transition-all transform hover:scale-105',
+                            selectedFormat === format 
+                                ? 'bg-blue-500 text-white' 
+                                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                        ]">
+                        {{ format }}
+                    </button>
+                </div>
+
+                <!-- Export Button -->
+                <div class="mt-6 flex justify-center">
+                    <button @click="exportData"
+                        class="bg-green-500 text-white px-6 py-2 rounded-lg transform transition-all hover:scale-105 hover:bg-green-600">
+                        Export as {{ selectedFormat }}
+                    </button>
+                </div>
+                <!-- Header/Footer Controls for PDF/PNG -->
+                <div v-if="['PDF', 'PNG'].includes(selectedFormat)" class="mb-6">
+                    <div class="flex justify-end mb-4">
+                        <label class="flex items-center space-x-2">
+                            <input type="checkbox" v-model="showHeaderFooter" class="form-checkbox">
+                            <span>Show Header/Footer</span>
+                        </label>
+                    </div>
+                    <transition name="slide">
+                        <div v-if="showHeaderFooter" class="space-y-4">
+                            <input v-model="header" placeholder="Header Text" class="w-full p-2 border rounded">
+                            <input v-model="footer" placeholder="Footer Text" class="w-full p-2 border rounded">
+                        </div>
+                    </transition>
+                </div>
+
+                <!-- Preview -->
+                <div v-if="['PDF', 'PNG'].includes(selectedFormat)" class="overflow-x-auto" ref="previewArea">
+                    <div v-if="showHeaderFooter && header" class="text-center py-4 text-lg font-bold">
+                        {{ header }}
+                    </div>
+
+                    <table class="min-w-full table-auto">
+                        <thead>
+                            <tr>
+                                <th v-for="(header, index) in tableHeaders" :key="index"
+                                    class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    {{ header }}
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            <tr v-for="(row, rowIndex) in tableData" :key="rowIndex">
+                                <td v-for="(cell, cellIndex) in row" :key="cellIndex"
+                                    class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {{ cell }}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div v-if="showHeaderFooter && footer" class="text-center py-4 text-lg font-bold">
+                        {{ footer }}
+                    </div>
+                </div>
+
+                <!-- Code Display for JSON/HTML -->
+                <transition name="fade">
+                    <pre v-if="['JSON', 'HTML'].includes(selectedFormat)"
+                        class="mt-6 bg-gray-800 text-white p-4 rounded-lg overflow-x-auto">
+                        <code class="w-full text-left block">{{ getExportCode() }}</code>
+                    </pre>
+                </transition>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp, ref } = Vue
+
+        createApp({
+            setup() {
+                const tableData = ref([])
+                const tableHeaders = ref([])
+                const selectedFormat = ref('JSON')
+                const showHeaderFooter = ref(false)
+                const header = ref('')
+                const footer = ref('')
+                const previewArea = ref(null)
+
+                const handleFile = (event) => {
+                    const file = event.target.files[0]
+                    const reader = new FileReader()
+
+                    reader.onload = (e) => {
+                        const data = new Uint8Array(e.target.result)
+                        const workbook = XLSX.read(data, { type: 'array' })
+                        const firstSheet = workbook.Sheets[workbook.SheetNames[0]]
+                        const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 })
+
+                        tableHeaders.value = jsonData[0]
+                        tableData.value = jsonData.slice(1)
+                    }
+
+                    reader.readAsArrayBuffer(file)
+                }
+
+                const getExportCode = () => {
+                    if (selectedFormat.value === 'JSON') {
+                        const jsonData = tableData.value.map(row => {
+                            const obj = {}
+                            tableHeaders.value.forEach((header, index) => {
+                                obj[header] = row[index]
+                            })
+                            return obj
+                        })
+                        return `const data = ${JSON.stringify(jsonData, null, 2)};`
+                    } else if (selectedFormat.value === 'HTML') {
+                        return `<table>
+  <thead>
+    <tr>
+      ${tableHeaders.value.map(header => `<th>${header}</th>`).join('\n      ')}
+    </tr>
+  </thead>
+  <tbody>
+    ${tableData.value.map(row => `
+    <tr>
+      ${row.map(cell => `<td>${cell}</td>`).join('\n      ')}
+    </tr>`).join('\n    ')}
+  </tbody>
+</table>`
+                    }
+                    return ''
+                }
+
+                const exportData = async () => {
+                    switch (selectedFormat.value) {
+                        case 'JSON':
+                        case 'HTML':
+                            const blob = new Blob([getExportCode()], {
+                                type: selectedFormat.value === 'JSON'
+                                    ? 'application/json'
+                                    : 'text/html'
+                            })
+                            const url = URL.createObjectURL(blob)
+                            const a = document.createElement('a')
+                            a.href = url
+                            a.download = `export.${selectedFormat.value.toLowerCase()}`
+                            a.click()
+                            URL.revokeObjectURL(url)
+                            break
+
+                        case 'PDF':
+                            const pdfOpts = {
+                                margin: 1,
+                                filename: 'export.pdf',
+                                image: { type: 'jpeg', quality: 0.98 },
+                                html2canvas: { scale: 2 },
+                                jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+                            }
+                            await html2pdf().from(previewArea.value).set(pdfOpts).save()
+                            break
+
+                        case 'PNG':
+                            const canvas = await html2canvas(previewArea.value)
+                            const pngUrl = canvas.toDataURL('image/png')
+                            const pngLink = document.createElement('a')
+                            pngLink.href = pngUrl
+                            pngLink.download = 'export.png'
+                            pngLink.click()
+                            break
+                    }
+                }
+
+                return {
+                    tableData,
+                    tableHeaders,
+                    selectedFormat,
+                    showHeaderFooter,
+                    header,
+                    footer,
+                    previewArea,
+                    handleFile,
+                    getExportCode,
+                    exportData
+                }
+            }
+        }).mount('#app')
+    </script>
+</body>
+
+</html>
