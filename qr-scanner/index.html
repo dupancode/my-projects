@@ -64,15 +64,15 @@
           }
         },
         sendPost(qrCode) {
-          const id = "111";
-          const url = "https://script.google.com/macros/s/AKfycbz2T9S0TDZlhZg94QrtjqA3kZI2OWeLZlpjcfw_PCFhK_H-QRcUBW4iX745qf9fqCWB/exec";
+          const id = "DM-28091";
+          const url = "";
 
           axios
             .get(url, { params: { id, qrCode } })
             .then((response) => {
-              const status = response.data.success;
+              const status = response.data;
               sound.play();
-              this.qrCodeContent = status === 1 ? "Peserta hadir!" : "Peserta tidak terdaftar!";
+              this.qrCodeContent = status.message;
 
               setTimeout(() => {
                 this.qrCodeContent = "";
