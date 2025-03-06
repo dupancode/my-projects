@@ -2,93 +2,112 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/x-icon" href="https://cdn-icons-png.flaticon.com/512/13534/13534590.png">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Al-Quran Digital</title>
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    <script src="https://unpkg.com/vue-router@4.0.15/dist/vue-router.global.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        main {
-            @media (min-width: 900px) {
-                width: 50%;
-            }
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/x-icon" href="https://cdn-icons-png.flaticon.com/512/13534/13534590.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Al-Quran Digital</title>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <script src="https://unpkg.com/vue-router@4.0.15/dist/vue-router.global.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    main {
+      @media (min-width: 900px) {
+        width: 50%;
+      }
 
-            .home div a {
-                position: relative;
-                width: 100%;
-                margin-top: 10px;
-                overflow: hidden;
+      .home div .card {
+        position: relative;
+        width: 100%;
+        margin-top: 10px;
+        overflow: hidden;
 
-                @media (min-width: 900px) {
-                    width: 48%;
-                    margin-top: 21px;
-                }
-
-                .arab {
-                    position: absolute;
-                    right: 0;
-                    top: 0;
-                    padding: 1px 12px;
-                    background: #34766ee8;
-                    border-top-right-radius: 0.5rem;
-                    border-bottom-left-radius: 0.5rem;
-
-                    p {
-                        color: #ffffff;
-                        font-size: 12pt;
-                    }
-                }
-            }
-
+        @media (min-width: 900px) {
+          width: 48%;
+          margin-top: 21px;
         }
 
-        .fade-enter-active,
-        .fade-leave-active {
-            transition: opacity 0.3s ease;
-        }
+        .arab {
+          position: absolute;
+          right: 0;
+          top: 0;
+          padding: 1px 12px;
+          background: #34766ee8;
+          border-top-right-radius: 0.5rem;
+          border-bottom-left-radius: 0.5rem;
 
-        .fade-enter-from,
-        .fade-leave-to {
-            opacity: 0;
+          p {
+            color: #ffffff;
+            font-size: 12pt;
+          }
         }
+      }
 
-        .arab-text {
-            font-size: 2rem;
-            line-height: 3rem;
-            color: #15803d;
-            direction: rtl;
-        }
-    </style>
+    }
+
+    .fade-enter-active,
+    .fade-leave-active {
+      transition: opacity 0.3s ease;
+    }
+
+    .fade-enter-from,
+    .fade-leave-to {
+      opacity: 0;
+    }
+
+    .arab-text {
+      font-size: 1.5rem;
+      color: #15803d;
+    }
+
+    .ayat {
+      width: 34px;
+      height: 40px;
+      background-image: url(https://quran.kemenag.go.id/assets/images/icons/ic-frame-number.svg);
+      background-size: contain;
+      background-position: center;
+      background-repeat: no-repeat;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+  </style>
 </head>
 
 <body class="bg-gradient-to-br from-teal-50 to-white min-h-screen">
-    <div id="app">
-        <header class="fixed top-0 w-full bg-teal-700 text-white p-4 shadow-lg z-50">
-            <h1 class="text-2xl font-bold text-center">Al-Quran Digital</h1>
-        </header>
-        <main class="mx-auto pt-20 pb-16 px-4">
-            <router-view v-slot="{ Component }">
-                <transition name="fade" mode="out-in">
-                    <component :is="Component" />
-                </transition>
-            </router-view>
-        </main>
-        <footer class="fixed bottom-0 w-full bg-teal-700 text-white p-4 text-center">
-            <p>Copyright by ❤️ Dupan Code</p>
-        </footer>
-    </div>
+  <div id="app">
+    <header class="fixed top-0 w-full bg-teal-700 text-white p-4 shadow-lg z-50">
+      <h1 class="text-2xl font-bold text-center">Al-Qur'an Digital</h1>
+    </header>
+    <main class="mx-auto pt-20 pb-16 px-4">
+      <router-view v-slot="{ Component }">
+        <transition name="fade" mode="out-in">
+          <component :is="Component" />
+        </transition>
+      </router-view>
+    </main>
+    <footer class="fixed bottom-0 w-full bg-teal-700 text-white p-4 text-center">
+      <p>Copyright by ❤️ Dupan Code</p>
+    </footer>
+  </div>
 
-    <!-- Home Component Template -->
-    <script type="text/x-template" id="home-template">
+  <!-- Home Component Template -->
+  <script type="text/x-template" id="home-template">
     <div class="home">
-        <input @focus="handleLastRead" type="text" v-model="searchQuery" placeholder="Cari Surah..." class="w-full p-2 border border-gray-300 rounded mb-4" />
-        <router-link :to="'/surah/' + surahLastRead['surahNumber']" v-if="isActive && searchQuery == ''" class="bg-teal-100 p-1 rounded-md mb-1 block">
-            Bacaan Terakhir: {{ surahLastRead['surahName'] }}, ayat: {{ surahLastRead['ayah'] }}</router-link>
-        <div @click="hideLastRead" class="flex flex-wrap justify-between">
-            <router-link v-for="surah in filteredSurahs" :key="surah.nomor" :to="'/surah/' + surah.nomor">
+        <input type="text" v-model="searchQuery" placeholder="Cari Surah..." class="w-full p-2 border border-gray-300 rounded mb-4" />
+        <div v-if="showPopup" class="z-30 fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50">
+            <div class="bg-white p-6 rounded-lg shadow-lg w-80 text-center relative">
+                <button @click="showPopup = false" class="absolute top-2 right-2 text-gray-600 hover:text-gray-900">&times;</button>
+                <h2 class="text-lg font-bold mb-4">Bacaan Terakhir</h2>
+                <img src="https://png.pngtree.com/png-clipart/20230405/original/pngtree-illustration-of-the-holy-quran-png-image_9025321.png" alt="" class="size-20 m-auto">
+                <p class="text-gray-700 mb-4">{{ surahLastRead.surahName }}, ayat: {{ surahLastRead.ayah }}</p>
+                <router-link :to="'/surah/' + surahLastRead.surahNumber">
+                <button class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700">Lanjutkan Membaca</button>
+              </router-link>
+            </div>
+        </div>
+        <div class="flex flex-wrap justify-between">
+            <router-link v-for="surah in filteredSurahs" :key="surah.nomor" class="card" :to="'/surah/' + surah.nomor">
                 <div class="p-4 border rounded-lg shadow hover:bg-gray-100 transition">
                     <div class="flex justify-between items-center">
                         <div>
@@ -102,12 +121,12 @@
                     </div>
                 </div>
             </router-link>
-        </div>
+          </div>
     </div>
     </script>
 
-    <!-- Surah Detail Component Template -->
-    <script type="text/x-template" id="surah-template">
+  <!-- Surah Detail Component Template -->
+  <script type="text/x-template" id="surah-template">
     <div :key="route.params.id" v-if="surah" class="bg-white rounded-lg shadow-lg p-6">
         <div class="text-center mb-8">
             <h2 id="surah-title" class="text-3xl font-bold text-teal-800">{{ surah.namaLatin }}</h2>
@@ -116,197 +135,209 @@
         </div>
         <div class="space-y-8">
             <div v-for="ayat in surah.ayat" :key="ayat.nomorAyat" :id="'ayah-' + ayat.nomorAyat"
-                class="p-6 border-b border-teal-100 bg-teal-50 relative">
+                class="p-2 border-b border-teal-100 bg-teal-50 relative">
                     
-                <div class="flex justify-between">
-                    <div style="height: 39px; width: 35px;" class="relative flex items-center justify-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="34" height="40" viewBox="0 0 34 40" fill="none">
-                            <path fill-rule="evenodd" clip-rule="evenodd" d="M17 0L19.9723 1.71979C25.3987 2.59915 30.0334 5.84672 32.7866 10.3704H31.026C32.9021 13.1098 34 16.4264 34 20C34 23.5736 32.9021 26.8902 31.026 29.6296H32.7866C30.0334 34.1533 25.3987 37.4009 19.9723 38.2802L17 40L14.0277 38.2802C8.60133 37.4009 3.96661 34.1533 1.21336 29.6296H2.97404C1.09787 26.8902 0 23.5736 0 20C0 16.4264 1.09787 13.1098 2.97404 10.3704H1.21336C3.96661 5.84672 8.60133 2.59915 14.0277 1.71979L17 0ZM4.80913 29.6296H6.75824C8.83443 31.8465 11.6191 33.3891 14.7501 33.8944L17 32.5926L19.2499 33.8944C22.3809 33.3891 25.1656 31.8465 27.2417 29.6296H29.1909C31.2768 26.981 32.5217 23.6362 32.5217 20C32.5217 16.3638 31.2768 13.019 29.1909 10.3704H27.2417C25.1656 8.15348 22.3809 6.61088 19.2499 6.1056L17 7.40741L14.7501 6.1056C11.6191 6.61088 8.83443 8.15348 6.75824 10.3704H4.80913C2.72316 13.019 1.47826 16.3638 1.47826 20C1.47826 23.6362 2.72316 26.981 4.80913 29.6296ZM18.9203 2.59259L17 1.48148L15.0797 2.59259V4.81481L17 5.92593L18.9203 4.81481V2.59259ZM13.2832 4.26884C13.3801 4.6663 13.1371 5.06714 12.7406 5.16421C10.0231 5.82935 7.599 7.24808 5.70183 9.18837C5.41612 9.48057 4.94816 9.48532 4.6566 9.19899C4.36504 8.91267 4.36029 8.44369 4.646 8.15149C6.73112 6.01897 9.39759 4.45747 12.3898 3.72504C12.7864 3.62797 13.1864 3.87144 13.2832 4.26884ZM21.2596 5.16421C20.863 5.06714 20.6201 4.6663 20.7169 4.26884C20.8138 3.87144 21.2138 3.62797 21.6103 3.72504C24.6026 4.45747 27.2691 6.01897 29.3542 8.15149C29.6399 8.44369 29.6351 8.91267 29.3436 9.19899C29.052 9.48532 28.5841 9.48057 28.2984 9.18837C26.4012 7.24808 23.9771 5.82935 21.2596 5.16421ZM17 38.5185L18.9203 37.4074V35.1852L17 34.0741L15.0797 35.1852V37.4074L17 38.5185ZM12.7406 34.8358C13.1371 34.9329 13.3801 35.3337 13.2832 35.7312C13.1864 36.1286 12.7864 36.372 12.3898 36.275C9.39759 35.5425 6.73112 33.981 4.646 31.8485C4.36029 31.5563 4.36504 31.0873 4.6566 30.801C4.94816 30.5147 5.41612 30.5194 5.70183 30.8116C7.599 32.7519 10.0231 34.1706 12.7406 34.8358ZM20.7169 35.7312C20.6201 35.3337 20.863 34.9329 21.2596 34.8358C23.9771 34.1706 26.4012 32.7519 28.2984 30.8116C28.5841 30.5194 29.052 30.5147 29.3436 30.801C29.6351 31.0873 29.6399 31.5563 29.3542 31.8485C27.2691 33.981 24.6026 35.5425 21.6103 36.275C21.2138 36.372 20.8138 36.1286 20.7169 35.7312Z" fill="rgb(13 148 136)"/>
-                        </svg>
-                        <!-- Angka di Tengah -->
-                        <span class="absolute text-base font-bold text-sm"
-                              style="top: 50%; left: 50%; transform: translate(-50%, -50%);">
-                            {{ ayat.nomorAyat }}
-                        </span>
-                    </div>
-          
-                    <!-- Teks Ayat -->
-                    <p class="arab-text text-right mb-4">
-                        {{ ayat.teksArab }}
-                    </p>
+                <div class="flex justify-end">
+                  <div class="flex flex-col space-y-3">
+                    <span class="leading-relaxed lg:leading-relaxed arab-text" dir="rtl">
+                      {{ ayat.teksArab }} 
+                      <span class="inline-block "><span class="text-base text-sm ayat">{{ ayat.nomorAyat }}</span></span></span></div>
                 </div>
 
                 <div>
+                  <div v-if="keterangan === 'keterangan' + ayat.nomorAyat" :id="'keterangan' + ayat.nomorAyat" class="mt-2">
                     <p class="text-gray-600 italic mb-2">{{ ayat.teksLatin }}</p>
                     <p class="text-gray-800">{{ ayat.teksIndonesia }}</p>
-                    <button @click="playAudio(ayat.audio['01'])" class=" p-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="rgb(13 148 136)" viewBox="0 0 24 24"><path stroke="rgb(13 148 136)" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m5 3 14 9-14 9z"></path></svg>
-                    </button>
+                  </div>
+                    <div class="flex flex-wrap justify-between mt-2">
+                      <button @click="playAudio(ayat.audio['01'])" class=" p-2">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="rgb(13 148 136)" viewBox="0 0 24 24"><path stroke="rgb(13 148 136)" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m5 3 14 9-14 9z"></path></svg>
+                      </button>
+                      <button @click="showKeterangan('keterangan' + ayat.nomorAyat)">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M15.8333 4.16667V15.8333H4.16667V4.16667H15.8333ZM15.8333 2.5H4.16667C3.25 2.5 2.5 3.25 2.5 4.16667V15.8333C2.5 16.75 3.25 17.5 4.16667 17.5H15.8333C16.75 17.5 17.5 16.75 17.5 15.8333V4.16667C17.5 3.25 16.75 2.5 15.8333 2.5Z" fill="#049F4D"/>
+                        <path d="M11.6673 14.1667H5.83398V12.5H11.6673V14.1667ZM14.1673 10.8334H5.83398V9.16671H14.1673V10.8334ZM14.1673 7.50004H5.83398V5.83337H14.1673V7.50004Z" fill="#049F4D"/>
+                        </svg>
+                      </button>
+                    </div>
                 </div>
             </div>
         </div>
+        <!-- Tambahkan Navigasi Sebelumnya & Selanjutnya -->
+<div class="flex justify-between mt-6">
+  <router-link @click="deleteLastRead" v-if="parseInt(route.params.id) > 1"
+      :to="'/surah/' + (parseInt(route.params.id) - 1)"
+      class="bg-teal-700 text-white px-4 py-2 rounded shadow">
+      Surat Sebelumnya
+  </router-link>
+  
+  <router-link @click="deleteLastRead" v-if="parseInt(route.params.id) < 114"
+      :to="'/surah/' + (parseInt(route.params.id) + 1)"
+      class="bg-teal-700 text-white px-4 py-2 rounded shadow">
+      Surat Selanjutnya
+  </router-link>
+</div>
+
     </div>
     </script>
 
-    <script>
-        const { createApp, ref, watch, onMounted, onUnmounted, computed, nextTick } = Vue;
-        const { createRouter, createWebHashHistory, useRoute } = VueRouter;
+  <script>
+    const { createApp, ref, watch, onMounted, onUnmounted, computed, nextTick } = Vue;
+    const { createRouter, createWebHashHistory, useRoute, useRouter } = VueRouter;
 
-        const Home = {
-            template: '#home-template',
-            setup() {
-                const surahs = ref([]);
-                const searchQuery = ref('');
-                const surahLastRead = ref('');
-                const isActive = ref(false);
+    const Home = {
+      template: '#home-template',
+      setup() {
+        const surahs = ref([]);
+        const searchQuery = ref('');
+        const surahLastRead = ref(null);
+        const showPopup = ref(false); // Popup hanya muncul jika ada bacaan terakhir
 
-                const fetchSurahs = async () => {
-                    try {
-                        const response = await axios.get('https://equran.id/api/v2/surat');
-                        surahs.value = response.data.data;
-                    } catch (error) {
-                        console.error('Error fetching surahs:', error);
-                    }
-                };
-
-                const filteredSurahs = computed(() => {
-                    return surahs.value.filter(s =>
-                        s.nama.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-                        s.namaLatin.toLowerCase().includes(searchQuery.value.toLowerCase())
-                    );
-                });
-                const handleLastRead = () => {
-                    isActive.value = true;
-
-                    const lastRead = JSON.parse(localStorage.getItem('lastRead'));
-                    if (lastRead) {
-                        surahLastRead.value = lastRead;
-                    } else {
-                        isActive.value = false;
-                    }
-                };
-
-                const hideLastRead = () => {
-                    isActive.value = false;
-                };
-
-                fetchSurahs();
-
-                return {
-                    surahs,
-                    searchQuery,
-                    filteredSurahs,
-                    surahLastRead,
-                    isActive,
-                    handleLastRead,
-                    hideLastRead
-                };
-            }
+        const fetchSurahs = async () => {
+          try {
+            const response = await axios.get('https://equran.id/api/v2/surat');
+            surahs.value = response.data.data;
+          } catch (error) {
+            console.error('Error fetching surahs:', error);
+          }
         };
 
-        const SurahDetail = {
-            template: '#surah-template',
-            setup() {
-                const surah = ref(null);
-                const currentAyah = ref(0);
-                const route = useRoute();
-                let observer = null;
-                let isAutoScrolling = false;
+        const filteredSurahs = computed(() =>
+          surahs.value.filter(s =>
+            s.nama.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+            s.namaLatin.toLowerCase().includes(searchQuery.value.toLowerCase())
+          )
+        );
 
-                const fetchSurah = async (id) => {
-                    try {
-                        const response = await axios.get(`https://equran.id/api/v2/surat/${id}`);
-                        surah.value = response.data.data;
-                    } catch (error) {
-                        console.error('Error fetching surah:', error);
-                    }
-                };
-
-                const updateLocalStorage = () => {
-                    if (!isAutoScrolling && surah.value) {
-                        localStorage.setItem('lastRead', JSON.stringify({
-                            surahNumber: surah.value.nomor,
-                            surahName: surah.value.namaLatin,
-                            ayah: currentAyah.value
-                        }));
-                    }
-                };
-
-                const observeAyahVisibility = () => {
-                    if (observer) observer.disconnect();
-
-                    observer = new IntersectionObserver((entries) => {
-                        if (isAutoScrolling) return;
-
-                        entries.forEach((entry) => {
-                            if (entry.isIntersecting) {
-                                const ayahNumber = parseInt(entry.target.id.replace("ayah-", ""));
-                                currentAyah.value = ayahNumber;
-                            }
-                        });
-                    }, { threshold: 0.6 });
-
-                    document.querySelectorAll("[id^='ayah-']").forEach(el => observer.observe(el));
-                };
-
-                const scrollToSection = (id) => {
-                    const element = document.getElementById('ayah-' + id);
-                    if (element) {
-                        isAutoScrolling = true; // Mencegah update saat scroll otomatis
-                        element.scrollIntoView({ behavior: "smooth", block: "start" });
-                        setTimeout(() => isAutoScrolling = false, 1000); // Kembalikan setelah scroll selesai
-                    }
-                };
-
-                const playAudio = (id) => {
-                    const audio = new Audio(id);
-                    if (audio.paused) {
-                        audio.play();
-                    } else {
-                        audio.pause();
-                    }
-                };
-
-                watch(currentAyah, updateLocalStorage);
-
-                onMounted(async () => {
-                    await fetchSurah(route.params.id);
-                    nextTick(() => {
-                        observeAyahVisibility();
-
-                        // **Scroll otomatis ke ayat terakhir**
-                        const lastRead = JSON.parse(localStorage.getItem('lastRead'));
-                        if (lastRead && lastRead.surahNumber === parseInt(route.params.id)) {
-                            setTimeout(() => scrollToSection(lastRead.ayah), 500); // Tunggu agar elemen siap
-                        }
-                    });
-                });
-
-                onUnmounted(() => {
-                    if (observer) observer.disconnect();
-                });
-
-                return {
-                    surah,
-                    route,
-                    currentAyah,
-                    playAudio
-                };
-            }
+        const handleLastRead = () => {
+          const lastRead = JSON.parse(localStorage.getItem('lastRead'));
+          if (lastRead) {
+            surahLastRead.value = lastRead;
+            showPopup.value = true; // Hanya tampilkan popup jika ada data
+          }
         };
 
-        const router = createRouter({
-            history: createWebHashHistory(),
-            routes: [
-                { path: '/', component: Home },
-                { path: '/surah/:id', component: SurahDetail }
-            ]
+        onMounted(() => {
+          fetchSurahs();
+          handleLastRead();
         });
 
-        const app = createApp({});
-        app.use(router);
-        app.mount('#app');
-    </script>
+        return { surahs, searchQuery, filteredSurahs, surahLastRead, showPopup };
+      }
+    };
+    const SurahDetail = {
+      template: '#surah-template',
+      setup() {
+        const surah = ref(null);
+        const keterangan = ref("");
+        const currentAyah = ref(0);
+        const route = useRoute();
+        const router = useRouter();
+        let observer = null;
+        let isAutoScrolling = false;
+        const audio = ref(null);
+
+        const fetchSurah = async (id) => {
+          try {
+            const response = await axios.get(`https://equran.id/api/v2/surat/${id}`);
+            surah.value = response.data.data;
+          } catch (error) {
+            console.error('Error fetching surah:', error);
+          }
+        };
+
+        const showKeterangan = (id) => {
+          keterangan.value = keterangan.value === id ? "" : id; // Toggle deskripsi
+        };
+
+        const updateLocalStorage = () => {
+          if (!isAutoScrolling && surah.value) {
+            localStorage.setItem('lastRead', JSON.stringify({
+              surahNumber: surah.value.nomor,
+              surahName: surah.value.namaLatin,
+              ayah: currentAyah.value
+            }));
+          }
+        };
+
+        const deleteLastRead = () => {
+          localStorage.removeItem('lastRead');
+          isAutoScrolling = true;
+          scrollToTop();
+          setTimeout(() => isAutoScrolling = false, 5000);
+        };
+
+        const observeAyahVisibility = () => {
+          if (observer) observer.disconnect();
+          observer = new IntersectionObserver(entries => {
+            if (isAutoScrolling) return;
+            entries.forEach(entry => {
+              if (entry.isIntersecting && !isAutoScrolling) {
+                currentAyah.value = parseInt(entry.target.id.replace("ayah-", ""));
+              }
+            });
+          }, { threshold: 0.6 });
+
+          document.querySelectorAll("[id^='ayah-']").forEach(el => observer.observe(el));
+        };
+
+        const scrollToTop = () => {
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        };
+
+        const scrollToSection = (id) => {
+          const element = document.getElementById('ayah-' + id);
+          if (element) {
+            isAutoScrolling = true;
+            element.scrollIntoView({ behavior: "smooth", block: "start" });
+            setTimeout(() => isAutoScrolling = false, 1000);
+          }
+        };
+
+        const playAudio = (url) => {
+          if (!audio.value) {
+            audio.value = new Audio(url);
+          } else {
+            audio.value.src = url;
+          }
+          audio.value.paused ? audio.value.play() : audio.value.pause();
+        };
+
+        watch(currentAyah, updateLocalStorage);
+        watch(() => route.params.id, async (newId) => {
+          if (newId) {
+            await fetchSurah(newId);
+            nextTick(() => {
+              observeAyahVisibility();
+              const lastRead = JSON.parse(localStorage.getItem('lastRead'));
+              if (lastRead && lastRead.surahNumber === parseInt(newId)) {
+                setTimeout(() => scrollToSection(lastRead.ayah), 500);
+              }
+            });
+          }
+        }, { immediate: true });
+
+        onUnmounted(() => {
+          if (observer) observer.disconnect();
+        });
+
+        return { surah, keterangan, route, currentAyah, playAudio, router, deleteLastRead, showKeterangan };
+      }
+    };
+
+    const router = createRouter({
+      history: createWebHashHistory(),
+      routes: [
+        { path: '/', component: Home },
+        { path: '/surah/:id', component: SurahDetail }
+      ]
+    });
+
+    const app = createApp({});
+    app.use(router);
+    app.mount('#app');
+  </script>
+
 </body>
 
 </html>
