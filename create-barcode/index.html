@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Barcode Generator Pro</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+
+<div id="app" class="bg-white p-6 rounded-lg shadow-md w-full max-w-md mx-4">
+    <h1 class="text-xl font-bold mb-4 text-center text-gray-800">Barcode Generator Pro</h1>
+    
+    <!-- Input Group -->
+    <div class="space-y-4">
+        <input 
+            type="text" 
+            v-model.trim="input" 
+            :placeholder="currentPlaceholder"
+            class="border-2 border-gray-200 p-2 w-full rounded-lg focus:outline-none focus:border-blue-500 transition"
+            @keyup.enter="generateBarcode"
+        >
+        
+        <select 
+            v-model="selectedType" 
+            class="border-2 border-gray-200 p-2 w-full rounded-lg focus:outline-none focus:border-blue-500 bg-white"
+            @change="onTypeChange"
+        >
+            <option value="qr">QR Code</option>
+            <option value="code128">Code 128</option>
+            <option value="datamatrix">Data Matrix</option>
+            <option value="ean13">EAN-13</option>
+            <option value="upca">UPC-A</option>
+            <option value="code93">Code 93</option>
+            <option value="itf">Interleaved 2 of 5</option>
+            <option value="pdf417">PDF417</option>
+            <option value="aztec">Aztec</option>
+        </select>
+
+        <select 
+            v-model="selectedFormat" 
+            class="border-2 border-gray-200 p-2 w-full rounded-lg focus:outline-none focus:border-blue-500 bg-white"
+        >
+            <option value="png">PNG (Optimal)</option>
+            <option value="svg">SVG</option>
+            <option value="jpg">JPG</option>
+            <option value="webp">WebP (Modern)</option>
+            <option value="gif">GIF</option>
+            <option value="tiff">TIFF</option>
+        </select>
+    </div>
+
+    <!-- Action Button -->
+    <button 
+        @click="generateBarcode" 
+        :disabled="!isInputValid || loading"
+        class="w-full mt-4 bg-blue-600 text-white p-3 rounded-lg font-semibold hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+    >
+        {{ loading ? 'Memproses...' : 'Buat Barcode' }}
+    </button>
+
+    <!-- Loading Indicator -->
+    <div v-if="loading" class="mt-6 text-center">
+        <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-blue-500 border-t-transparent"></div>
+        <p class="mt-2 text-gray-600">Sedang memproses, harap tunggu...</p>
+    </div>
+
+    <div v-if="errorMessage" class="mt-4 p-3 bg-red-100 text-red-700 rounded-lg">
+        {{ errorMessage }}
+    </div>
+
+    <div v-if="barcodeUrl" class="mt-6 text-center">
+        <img 
+            :src="barcodeUrl" 
+            alt="Generated Barcode" 
+            class="mx-auto max-w-[250px] h-auto border border-gray-200 rounded-lg"
+            @load="handleImageLoad"
+            @error="handleImageError"
+        >
+        <button 
+            v-if="showDownload" 
+            @click="handleDownloadClick"
+            :disabled="loading"
+            class="mt-4 w-full bg-green-600 text-white p-3 rounded-lg font-semibold hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+            {{ loading ? 'Mengunduh...' : 'Download' }}
+        </button>
+    </div>
+</div>
+
+<script>
+const { createApp } = Vue;
+
+createApp({
+    data() {
+        return {
+            input: '',
+            selectedType: 'qr',
+            selectedFormat: 'png',
+            currentPlaceholder: '',
+            barcodeUrl: '',
+            loading: false,
+            errorMessage: '',
+            downloadBlob: null,
+            timeoutId: null,
+            validationRules: {
+                qr: { pattern: /^.{1,255}$/, message: '1-255 karakter' },
+                code128: { pattern: /^[\x00-\x7F]{1,255}$/, message: 'ASCII 1-255 karakter' },
+                ean13: { pattern: /^\d{13}$/, message: '13 digit angka' },
+                upca: { pattern: /^\d{12}$/, message: '12 digit angka' },
+                datamatrix: { pattern: /^[\x00-\x7F]{1,2335}$/, message: '1-2335 karakter' },
+                code93: { pattern: /^[A-Za-z0-9\-\$\%\+\s\.\/\x00]{1,255}$/, message: 'Karakter valid Code93' },
+                itf: { pattern: /^\d{2,}$/, message: 'Angka genap digit' },
+                pdf417: { pattern: /^.{1,925}$/, message: '1-925 karakter' },
+                aztec: { pattern: /^.{1,3832}$/, message: '1-3832 karakter' }
+            },
+            placeholderExamples: {
+                qr: 'Contoh: Halo Dunia!',
+                code128: 'Contoh: ABC123',
+                ean13: 'Contoh: 1234567890123',
+                upca: 'Contoh: 123456789012',
+                datamatrix: 'Contoh: DataMatrix123',
+                code93: 'Contoh: CODE93+DATA',
+                itf: 'Contoh: 12345678',
+                pdf417: 'Contoh: PDF417 Barcode Data',
+                aztec: 'Contoh: AztecFormat'
+            }
+        }
+    },
+    computed: {
+        isInputValid() {
+            const rule = this.validationRules[this.selectedType];
+            return rule.pattern.test(this.input);
+        },
+        showDownload() {
+            return this.barcodeUrl && !this.loading && !this.errorMessage;
+        }
+    },
+    methods: {
+        updateInputPlaceholder() {
+            const rule = this.validationRules[this.selectedType];
+            const example = this.placeholderExamples[this.selectedType];
+            this.currentPlaceholder = `${rule.message}. ${example}`;
+        },
+        onTypeChange() {
+            this.input = '';
+            this.barcodeUrl = '';
+            this.downloadBlob = null;
+            this.updateInputPlaceholder();
+        },
+        async generateBarcode() {
+            if (!this.isInputValid) return;
+            try {
+                this.resetState();
+                this.loading = true;
+
+                this.timeoutId = setTimeout(() => {
+                    this.loading = false;
+                    this.errorMessage = 'Timeout: Server tidak merespon';
+                }, 10000);
+
+                const apiUrl = `https://barcode.orcascan.com/?type=${this.selectedType}&data=${encodeURIComponent(this.input)}&format=${this.selectedFormat}&download=true`;
+                const response = await fetch(apiUrl);
+                this.downloadBlob = await response.blob();
+                this.barcodeUrl = URL.createObjectURL(this.downloadBlob);
+
+            } catch (error) {
+                this.handleError(error);
+            }
+        },
+        handleImageLoad() {
+            clearTimeout(this.timeoutId);
+            this.loading = false;
+            this.errorMessage = '';
+        },
+        handleImageError() {
+            this.loading = false;
+            this.errorMessage = 'Gagal memuat barcode';
+            clearTimeout(this.timeoutId);
+        },
+        async handleDownloadClick() {
+            this.loading = true;
+            await this.delay(500);
+            this.downloadImage();
+            this.loading = false;
+        },
+        downloadImage() {
+            if (this.downloadBlob) {
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(this.downloadBlob);
+                link.download = `barcode-by-dupancode-${Date.now()}.${this.selectedFormat}`;
+                link.click();
+            }
+        },
+        handleError(error) {
+            this.errorMessage = error.message || 'Terjadi kesalahan';
+            this.loading = false;
+            clearTimeout(this.timeoutId);
+        },
+        resetState() {
+            this.errorMessage = '';
+            if (this.barcodeUrl) {
+                URL.revokeObjectURL(this.barcodeUrl);
+            }
+        },
+        delay(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+    },
+    mounted() {
+        this.updateInputPlaceholder();
+    }
+}).mount('#app');
+</script>
+
+</body>
+</html>
