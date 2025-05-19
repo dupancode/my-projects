@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Scanner QR Code</title>
+  <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jsqr"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+  <div id="app" class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+    <h1 class="text-2xl font-bold text-gray-800 mb-4">Scan QR Code</h1>
+
+    <!-- Video Preview & Image Upload -->
+    <div class="relative">
+      <video v-show="scanning" ref="video" class="w-full rounded-lg" autoplay playsinline></video>
+      <img v-if="previewImage" :src="previewImage" alt="Preview" class="w-full rounded-lg" />
+
+      <!-- Upload Button -->
+      <div v-show="scanning" class="absolute top-[2px] left-1">
+        <label for="file-upload" class="cursor-pointer">
+          <svg class="w-8 h-8" fill="#ffffff" viewBox="0 0 24 24">
+            <path d="M19,13a1,1,0,0,0-1,1v.38L16.52,12.9a2.79,2.79,0,0,0-3.93,0l-.7.7L9.41,11.12a2.85,2.85,0,0,0-3.93,0L4,12.6V7A1,1,0,0,1,5,6h7a1,1,0,0,0,0-2H5A3,3,0,0,0,2,7V19a3,3,0,0,0,3,3H17a3,3,0,0,0,3-3V14A1,1,0,0,0,19,13ZM5,20a1,1,0,0,1-1-1V15.43l2.9-2.9a.79.79,0,0,1,1.09,0l3.17,3.17L15.46,20Zm13-1a.89.89,0,0,1-.18.53L13.31,15l.7-.7a.77.77,0,0,1,1.1,0L18,17.21ZM22.71,4.29l-3-3a1,1,0,0,0-.33-.21,1,1,0,0,0-.76,0,1,1,0,0,0-.33.21l-3,3a1,1,0,0,0,1.42,1.42L18,4.41V10a1,1,0,0,0,2,0V4.41l1.29,1.3a1,1,0,0,0,1.42,0A1,1,0,0,0,22.71,4.29Z"></path>
+          </svg>
+          <input id="file-upload" type="file" accept="image/*" @change="handleImageUpload" class="hidden" />
+        </label>
+      </div>
+    </div>
+
+    <!-- Hasil QR -->
+    <div v-if="qrCodeContent" class="mt-4 bg-green-100 text-green-800 p-3 rounded break-words">
+      <strong>Hasil:</strong> {{ qrCodeContent }}
+    </div>
+
+    <!-- Tombol Mulai Lagi -->
+    <button v-if="qrCodeContent" @click="startScanning" class="mt-4 w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition">
+      Mulai Scanner Lagi
+    </button>
+
+    <!-- Pesan Error -->
+    <div v-if="errorMessage" class="mt-4 text-red-600">
+      {{ errorMessage }}
+    </div>
+  </div>
+
+  <script>
+    new Vue({
+      el: "#app",
+      data() {
+        return {
+          qrCodeContent: null,
+          errorMessage: null,
+          scanning: false,
+          stream: null,
+          previewImage: null
+        };
+      },
+      mounted() {
+        this.startScanning();
+      },
+      methods: {
+        async startScanning() {
+          try {
+            this.qrCodeContent = "";
+            this.errorMessage = "";
+            this.previewImage = null;
+            this.scanning = true;
+
+            const constraints = { video: { facingMode: "environment" } };
+            this.stream = await navigator.mediaDevices.getUserMedia(constraints);
+            this.$refs.video.srcObject = this.stream;
+            this.scanQRCode();
+          } catch (error) {
+            this.errorMessage = "Tidak dapat mengakses kamera. Periksa izin kamera.";
+            console.error(error);
+          }
+        },
+        scanQRCode() {
+          const video = this.$refs.video;
+          const canvas = document.createElement("canvas");
+          const ctx = canvas.getContext("2d");
+
+          const scan = () => {
+            if (!this.scanning) return;
+
+            canvas.width = video.videoWidth || 640;
+            canvas.height = video.videoHeight || 480;
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const result = jsQR(imageData.data, canvas.width, canvas.height);
+
+            if (result) {
+              this.qrCodeContent = result.data;
+              this.playBeep();
+              this.stopCamera();
+              this.scanning = false;
+            } else {
+              requestAnimationFrame(scan);
+            }
+          };
+
+          scan();
+        },
+        stopCamera() {
+          if (this.stream) {
+            this.stream.getTracks().forEach(track => track.stop());
+            this.stream = null;
+          }
+        },
+        playBeep() {
+          new Audio("https://www.soundjay.com/buttons/sounds/beep-07.mp3").play()
+            .catch(err => console.warn("Beep error:", err));
+        },
+        handleImageUpload(event) {
+          const file = event.target.files[0];
+          if (!file) return;
+
+          this.stopCamera();
+          this.scanning = false;
+          this.qrCodeContent = "";
+          this.errorMessage = "";
+          this.previewImage = URL.createObjectURL(file);
+
+          const img = new Image();
+          const reader = new FileReader();
+
+          reader.onload = (e) => {
+            img.onload = () => {
+              const canvas = document.createElement("canvas");
+              canvas.width = img.width;
+              canvas.height = img.height;
+              const ctx = canvas.getContext("2d");
+              ctx.drawImage(img, 0, 0);
+              const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+              const result = jsQR(imageData.data, canvas.width, canvas.height);
+              if (result) {
+                this.qrCodeContent = result.data;
+                this.playBeep();
+              } else {
+                this.errorMessage = "QR code tidak dikenali dari gambar.";
+              }
+            };
+            img.src = e.target.result;
+          };
+
+          reader.readAsDataURL(file);
+        }
+      },
+      beforeDestroy() {
+        this.stopCamera();
+      }
+    });
+  </script>
+</body>
+</html>
