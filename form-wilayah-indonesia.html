@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Form Wilayah Indonesia</title>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+  <div id="app" class="w-full max-w-lg bg-white p-6 rounded-xl shadow-md space-y-6">
+    <h1 class="text-2xl font-bold text-center text-gray-700">Form Wilayah Indonesia</h1>
+
+    <!-- Input Wilayah -->
+    <div v-for="(item, index) in wilayah" :key="index" class="relative">
+      <label class="block mb-1 text-sm font-semibold text-gray-600">{{ item.label }}</label>
+      <input
+        type="text"
+        v-model="item.search"
+        :disabled="index > 0 && !wilayah[index - 1].model"
+        @focus="item.open = true"
+        @input="filterList(index)"
+        placeholder="Ketik untuk mencari..."
+        class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 disabled:bg-gray-100 disabled:cursor-not-allowed"
+      >
+      <!-- Dropdown -->
+      <ul v-show="item.open && item.filtered.length"
+          class="absolute z-10 w-full bg-white border rounded-lg shadow max-h-48 overflow-y-auto mt-1">
+        <li v-for="option in item.filtered" :key="option.id"
+            @click="selectOption(index, option)"
+            class="px-4 py-2 hover:bg-blue-100 cursor-pointer text-sm">
+          {{ option.name }}
+        </li>
+      </ul>
+    </div>
+
+    <!-- Output -->
+    <div class="bg-gray-50 p-4 rounded-lg border">
+      <h2 class="text-lg font-semibold text-gray-700 mb-3">Output Terpilih</h2>
+      <ul class="text-sm space-y-1 text-gray-600">
+        <li><strong>Provinsi:</strong> {{ wilayah[0].model || '-' }}</li>
+        <li><strong>Kabupaten:</strong> {{ wilayah[1].model || '-' }}</li>
+        <li><strong>Kecamatan:</strong> {{ wilayah[2].model || '-' }}</li>
+        <li><strong>Kelurahan:</strong> {{ wilayah[3].model || '-' }}</li>
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    const { createApp, reactive, nextTick } = Vue;
+
+    createApp({
+      setup() {
+        const wilayah = reactive([
+          { label: 'Provinsi', model: '', search: '', id: '', open: false, list: [], filtered: [], api: 'provinces' },
+          { label: 'Kabupaten', model: '', search: '', id: '', open: false, list: [], filtered: [], api: 'regencies' },
+          { label: 'Kecamatan', model: '', search: '', id: '', open: false, list: [], filtered: [], api: 'districts' },
+          { label: 'Kelurahan', model: '', search: '', id: '', open: false, list: [], filtered: [], api: 'villages' },
+        ]);
+
+        const fetchList = async (type, id = '') => {
+          const url = `https://www.emsifa.com/api-wilayah-indonesia/api/${type}${id ? '/' + id : ''}.json`;
+          const res = await axios.get(url);
+          return res.data;
+        };
+
+        const filterList = (index) => {
+          const search = wilayah[index].search.toLowerCase();
+          wilayah[index].filtered = wilayah[index].list.filter(item =>
+            item.name.toLowerCase().includes(search)
+          );
+        };
+
+        const selectOption = async (index, option) => {
+          wilayah[index].model = option.name;
+          wilayah[index].search = option.name;
+          wilayah[index].id = option.id;
+          wilayah[index].open = false;
+
+          // Reset berikutnya
+          for (let i = index + 1; i < wilayah.length; i++) {
+            wilayah[i].model = '';
+            wilayah[i].search = '';
+            wilayah[i].id = '';
+            wilayah[i].list = [];
+            wilayah[i].filtered = [];
+          }
+
+          const next = wilayah[index + 1];
+          if (next) {
+            const data = await fetchList(next.api, option.id);
+            next.list = data;
+            next.filtered = data;
+            await nextTick();
+          }
+        };
+
+        fetchList('provinces').then(data => {
+          wilayah[0].list = data;
+          wilayah[0].filtered = data;
+        });
+
+        document.addEventListener('click', (e) => {
+          wilayah.forEach((item) => {
+            if (!e.target.closest('.relative')) item.open = false;
+          });
+        });
+
+        return { wilayah, filterList, selectOption };
+      }
+    }).mount('#app');
+  </script>
+</body>
+</html>
